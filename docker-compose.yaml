@@ -1,0 +1,57 @@
+version: '3'
+services:
+  postgres:
+    image: postgres:alpine
+    restart: always
+    volumes:
+      - db-data:$PGDATA
+    ports:
+      - "$POSTGRES_PORT:5432"
+    networks:
+      - backend
+    env_file: .env
+  website:
+    build: website/
+    ports:
+      - "8000:8000"
+    networks:
+      - frontend
+      - backend
+    volumes:
+      - ./log/uwsgi:/tmp/uwsgi
+      - assets-data:/code/assets
+      - ./QuiverWeb:/QuiverWeb
+      - ./quiver2html:/quiver2html
+      - ./blog:/blog
+    depends_on:
+      - postgres
+    env_file: .env
+  nginx:
+    build:
+      context: nginx/
+      args:
+        DOMAIN: $DOMAIN
+    env_file: .env
+    volumes:
+      - ./log:/var/log/
+      - assets-data:/usr/share/nginx/assets/:ro
+    ports:
+      - "80:80"
+    networks:
+      - frontend
+    depends_on:
+      - website
+  shadowsocks:
+    image: vimagick/shadowsocks-libev
+    ports:
+      - "8989:8989"
+    networks:
+      - frontend
+    env_file: .env
+    restart: always
+networks:
+  frontend:
+  backend:
+volumes:
+  db-data:
+  assets-data:

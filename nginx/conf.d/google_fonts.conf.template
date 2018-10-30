@@ -1,0 +1,57 @@
+upstream google {
+    server fonts.googleapis.com:80;
+}
+
+upstream gstatic {
+    server fonts.gstatic.com:80;
+}
+
+# 临时文件文件位置，1和2表示第一级目录使用1个字符，第二级目录使用2个字符
+proxy_temp_path   /var/tmp/fonts  1 2;
+# 缓存位置（因为静态资源很少更新），
+proxy_cache_path  /var/cache/fonts  levels=1:2 keys_zone=cache1:100m inactive=30d max_size=1g;
+
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name fonts.${DOMAIN};
+
+    access_log  /var/log/nginx/fonts.access.log  main;
+
+    valid_referers none server_names *.${DOMAIN} ${DOMAIN} 127.0.0.1;
+    if ($invalid_referer) {
+        return 403;
+    }
+
+    location /css {
+        sub_filter 'fonts.gstatic.com' 'fonts.${DOMAIN}';
+        sub_filter_once off;
+        sub_filter_types text/css;
+        proxy_pass_header Server;
+        proxy_set_header Host fonts.googleapis.com;
+        proxy_set_header Accept-Encoding '';
+        proxy_redirect off;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Scheme $scheme;
+        proxy_pass http://google;
+        proxy_cache cache1;
+        proxy_cache_key $host$uri$is_args$args;
+        proxy_cache_valid 200 304 10m;
+        expires 365d;
+    }
+
+    location / {
+        proxy_pass_header Server;
+        proxy_set_header Host fonts.gstatic.com;
+        proxy_redirect off;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Scheme $scheme;
+        proxy_pass http://gstatic;
+        proxy_cache cache1;
+        proxy_cache_key $host$uri$is_args$args;
+        proxy_cache_valid 200 304 10m;
+        expires 365d;
+    }
+}
+

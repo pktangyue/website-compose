@@ -1,0 +1,12 @@
+[submodule "QuiverWeb"]
+	path = QuiverWeb
+	url = git@git.coding.net:pktangyue/QuiverWeb.git
+[submodule "website"]
+	path = website
+	url = git@github.com:pktangyue/website.git
+[submodule "quiver2html"]
+	path = quiver2html
+	url = git@github.com:pktangyue/quiver2html.git
+[submodule "blog"]
+	path = blog
+	url = git@git.coding.net:pktangyue/blog.git
