@@ -1,6 +1,7 @@
 # shadowsocks
 PASSWORD=
-SERVER_PORT=
+SS_PORT=
+METHOD=
 # nginx
 DOMAIN=
 # postgres

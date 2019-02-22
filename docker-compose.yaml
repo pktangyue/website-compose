@@ -42,9 +42,10 @@ services:
     depends_on:
       - website
   shadowsocks:
-    image: vimagick/shadowsocks-libev
+    image: shadowsocks/shadowsocks-libev
     ports:
-      - "8989:8989"
+      - "$SS_PORT:8388"
+      - "$SS_PORT:8388/udp"
     networks:
       - frontend
     env_file: .env
